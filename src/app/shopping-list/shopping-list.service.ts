@@ -22,7 +22,6 @@ export class ShoppingListService {
   }
 
   addIngredients(newIngredients: Ingredient[]) {
-    console.log(this.ingredients);
     for (const ni of newIngredients) {
       const index = this.ingredients.findIndex(i => i.name === ni.name);
       if (index >= 0) {
