@@ -2,6 +2,14 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.3.3.
 
+## Firebase setup
+Add `/src/app/shared/firebase.ts` file with your **properly configured** (based on Udemy course) Firebase DB URL and API KEY, like this:
+
+```
+export const BACKEND_URL = 'https://xyz.firebaseio.com/';
+export const API_KEY = 'abc123';
+```
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.

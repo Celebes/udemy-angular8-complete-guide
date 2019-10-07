@@ -4,17 +4,15 @@ import {RecipeService} from '../recipes/recipe.service';
 import {Recipe} from '../recipes/recipe.model';
 import {map} from 'rxjs/operators';
 import {tap} from 'rxjs/internal/operators/tap';
-
-/*
- * ink do realtime database (test mode) projektu firebase z domyslnymi ustawieniami
- */
-const BACKEND_URL = 'https://xyz.firebaseio.com/';
+import {BACKEND_URL} from './firebase';
+import {AuthService} from '../auth/auth.service';
 
 @Injectable({providedIn: 'root'})
 export class DataStorageService {
 
   constructor(private http: HttpClient,
-              private recipeService: RecipeService) {
+              private recipeService: RecipeService,
+              private authService: AuthService) {
   }
 
   storeRecipes() {
@@ -25,15 +23,14 @@ export class DataStorageService {
   }
 
   fetchRecipes() {
-    return this.http.get<Recipe[]>(`${BACKEND_URL}/recipes.json`)
-      .pipe(
-        map(recipes => recipes.map(recipe => {
-          // obsluga przepisow stworzonych bez ingredients,
-          // ktore wtedy po stronie firebase nie maja w ogole takiego pola,
-          // wiec trzeba dodac chociaz pusta tablice
-          return {...recipe, ingredients: recipe.ingredients ? recipe.ingredients : []};
-        })),
-        tap(recipes => this.recipeService.setRecipes(recipes))
-      );
+    return this.http.get<Recipe[]>(`${BACKEND_URL}/recipes.json`).pipe(
+      map(recipes => recipes.map(recipe => {
+        // obsluga przepisow stworzonych bez ingredients,
+        // ktore wtedy po stronie firebase nie maja w ogole takiego pola,
+        // wiec trzeba dodac chociaz pusta tablice
+        return {...recipe, ingredients: recipe.ingredients ? recipe.ingredients : []};
+      })),
+      tap(recipes => this.recipeService.setRecipes(recipes))
+    );
   }
 }
