@@ -4,8 +4,8 @@ import {RecipeService} from '../recipes/recipe.service';
 import {Recipe} from '../recipes/recipe.model';
 import {map} from 'rxjs/operators';
 import {tap} from 'rxjs/internal/operators/tap';
-import {BACKEND_URL} from './firebase';
 import {AuthService} from '../auth/auth.service';
+import {environment} from '../../environments/environment';
 
 @Injectable({providedIn: 'root'})
 export class DataStorageService {
@@ -18,12 +18,12 @@ export class DataStorageService {
   storeRecipes() {
     const recipes = this.recipeService.getRecipes();
     // put w przypadku firebase podmienia aktualna wartosc pod podanym endpointem na to co przekazemy, zamiast dodawac
-    this.http.put(`${BACKEND_URL}/recipes.json`, recipes)
+    this.http.put(`${environment.firebaseBackendURL}/recipes.json`, recipes)
       .subscribe(response => console.log(response));
   }
 
   fetchRecipes() {
-    return this.http.get<Recipe[]>(`${BACKEND_URL}/recipes.json`).pipe(
+    return this.http.get<Recipe[]>(`${environment.firebaseBackendURL}/recipes.json`).pipe(
       map(recipes => recipes.map(recipe => {
         // obsluga przepisow stworzonych bez ingredients,
         // ktore wtedy po stronie firebase nie maja w ogole takiego pola,

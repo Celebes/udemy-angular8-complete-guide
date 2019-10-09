@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
-import {API_KEY} from '../shared/firebase';
+import {environment} from '../../environments/environment';
 import {catchError} from 'rxjs/operators';
 import {BehaviorSubject, Observable, throwError} from 'rxjs';
 import {User} from './user.model';
@@ -65,7 +65,7 @@ export class AuthService {
 
   private sendAuthRequest(email: string, password: string, authType: AuthType): Observable<AuthResponseData> {
     const apiEndpoint = (authType === AuthType.SIGN_UP) ? 'signUp' : 'signInWithPassword';
-    const url = `https://identitytoolkit.googleapis.com/v1/accounts:${apiEndpoint}?key=${API_KEY}`;
+    const url = `https://identitytoolkit.googleapis.com/v1/accounts:${apiEndpoint}?key=${environment.firebaseAPIKey}`;
     return this.http.post<AuthResponseData>(url, {email, password, returnSecureToken: true})
       .pipe(
         catchError(this.handleError),
