@@ -50,7 +50,11 @@ export class AuthEffects {
   @Effect({dispatch: false})
   authRedirect = this.actions$.pipe(
     ofType(AuthActions.AUTHENTICATE_SUCCESS),
-    tap(() => this.router.navigate(['/recipes']))
+    tap((action: AuthActions.AuthenticateSuccess) => {
+      if (action.payload.redirect) {
+        this.router.navigate(['/']);
+      }
+    })
   );
 
   @Effect({dispatch: false})
@@ -90,7 +94,8 @@ export class AuthEffects {
           userId: loadedUser.id,
           email: loadedUser.email,
           token: loadedUser.token,
-          expirationDate: tokenExpirationDate
+          expirationDate: tokenExpirationDate,
+          redirect: false
         });
       } else {
         return {type: 'DUMMY'}; // fake action
@@ -116,7 +121,8 @@ export class AuthEffects {
       userId: authResponseData.localId,
       email: authResponseData.email,
       token: authResponseData.idToken,
-      expirationDate
+      expirationDate,
+      redirect: true
     });
   };
 
