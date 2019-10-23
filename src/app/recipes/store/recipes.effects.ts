@@ -1,4 +1,4 @@
-import {Actions, Effect, ofType} from '@ngrx/effects';
+import {Actions, createEffect, ofType} from '@ngrx/effects';
 import * as RecipesActions from './recipes.actions';
 import {map, switchMap, withLatestFrom} from 'rxjs/operators';
 import {Recipe} from '../recipe.model';
@@ -16,9 +16,8 @@ export class RecipesEffects {
               private store: Store<AppState>) {
   }
 
-  @Effect()
-  fetchRecipes = this.actions$.pipe(
-    ofType(RecipesActions.FETCH_RECIPES),
+  fetchRecipes$ = createEffect(() => this.actions$.pipe(
+    ofType(RecipesActions.fetchRecipes),
     switchMap(() => this.http.get<Recipe[]>(`${environment.firebaseBackendURL}/recipes.json`)),
     map(recipes => recipes.map(recipe => {
       // obsluga przepisow stworzonych bez ingredients,
@@ -26,15 +25,14 @@ export class RecipesEffects {
       // wiec trzeba dodac chociaz pusta tablice
       return {...recipe, ingredients: recipe.ingredients ? recipe.ingredients : []};
     })),
-    map(recipes => new RecipesActions.SetRecipes(recipes))
-  );
+    map(recipes => RecipesActions.setRecipes({recipes}))
+  ));
 
-  @Effect({dispatch: false})
-  storeRecipes = this.actions$.pipe(
-    ofType(RecipesActions.STORE_RECIPES),
+  storeRecipes$ = createEffect(() => this.actions$.pipe(
+    ofType(RecipesActions.storeRecipes),
     withLatestFrom(this.store.select('recipes')),
     switchMap(([actionData, recipesState]) => { // destrukturyzacja tablicy
       return this.http.put(`${environment.firebaseBackendURL}/recipes.json`, recipesState.recipes);
     })
-  );
+  ), {dispatch: false});
 }

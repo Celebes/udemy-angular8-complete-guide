@@ -1,4 +1,4 @@
-import {Actions, Effect, ofType} from '@ngrx/effects';
+import {Actions, createEffect, ofType} from '@ngrx/effects';
 import * as AuthActions from './auth.actions';
 import {catchError, map, switchMap} from 'rxjs/operators';
 import {Observable, of} from 'rxjs';
@@ -24,55 +24,50 @@ export class AuthEffects {
               private router: Router) {
   }
 
-  @Effect()
-  authSignup = this.actions$.pipe(
-    ofType(AuthActions.SIGNUP_START),
-    switchMap((action: AuthActions.SignupStart) => {
-      return this.sendAuthRequest(action.payload.email, action.payload.password, AuthType.SIGN_UP)
+  authSignup$ = createEffect(() => this.actions$.pipe(
+    ofType(AuthActions.signupStart),
+    switchMap(action => {
+      return this.sendAuthRequest(action.email, action.password, AuthType.SIGN_UP)
         .pipe(
           tap((authResponseData: AuthResponseData) => this.authService.setLogoutTimer(+authResponseData.expiresIn * 1000)),
           map(this.handleAuthentication),
           catchError(this.handleError)
         );
     })
-  );
+  ));
 
-  @Effect()
-  authLogin = this.actions$.pipe(
-    ofType(AuthActions.LOGIN_START),
-    switchMap((action: AuthActions.LoginStart) => {
-      return this.sendAuthRequest(action.payload.email, action.payload.password, AuthType.SIGN_IN)
+  authLogin$ = createEffect(() => this.actions$.pipe(
+    ofType(AuthActions.loginStart),
+    switchMap(action => {
+      return this.sendAuthRequest(action.email, action.password, AuthType.SIGN_IN)
         .pipe(
           tap((authResponseData: AuthResponseData) => this.authService.setLogoutTimer(+authResponseData.expiresIn * 1000)),
           map(this.handleAuthentication),
           catchError(this.handleError)
         );
     }),
-  );
+  ));
 
-  @Effect({dispatch: false})
-  authRedirect = this.actions$.pipe(
-    ofType(AuthActions.AUTHENTICATE_SUCCESS),
-    tap((action: AuthActions.AuthenticateSuccess) => {
-      if (action.payload.redirect) {
-        this.router.navigate(['/']).then(() => this.store.dispatch(new AuthActions.AuthenticateStopLoading()));
+  authRedirect$ = createEffect(() => this.actions$.pipe(
+    ofType(AuthActions.authenticateSuccess),
+    tap(action => {
+      if (action.redirect) {
+        this.router.navigate(['/']).then(() => this.store.dispatch(AuthActions.authenticateStopLoading()));
       }
     })
-  );
+  ), {dispatch: false});
 
-  @Effect({dispatch: false})
-  authLogout = this.actions$.pipe(
-    ofType(AuthActions.LOGOUT),
+  authLogout$ = createEffect(() => this.actions$.pipe(
+    ofType(AuthActions.logout),
     tap(() => {
       this.authService.clearLogoutTimer();
       localStorage.removeItem(USER_LOCAL_STORAGE_KEY);
       this.router.navigate(['/auth']);
     })
-  );
+  ), {dispatch: false});
 
-  @Effect()
-  authAutoLogin = this.actions$.pipe(
-    ofType(AuthActions.AUTO_LOGIN),
+  authAutoLogin$ = createEffect(() => this.actions$.pipe(
+    ofType(AuthActions.autoLogin),
     map(() => {
       const userData: string = localStorage.getItem(USER_LOCAL_STORAGE_KEY);
       if (!userData) {
@@ -93,7 +88,7 @@ export class AuthEffects {
         const expirationDuration = new Date(tokenExpirationDate).getTime() - new Date().getTime();
         this.authService.setLogoutTimer(expirationDuration);
 
-        return new AuthActions.AuthenticateSuccess({
+        return AuthActions.authenticateSuccess({
           userId: loadedUser.id,
           email: loadedUser.email,
           token: loadedUser.token,
@@ -104,7 +99,7 @@ export class AuthEffects {
         return {type: 'DUMMY'}; // fake action
       }
     })
-  );
+  ));
 
   private sendAuthRequest(email: string, password: string, authType: AuthType): Observable<AuthResponseData> {
     const apiEndpoint = (authType === AuthType.SIGN_UP) ? 'signUp' : 'signInWithPassword';
@@ -120,7 +115,7 @@ export class AuthEffects {
     localStorage.setItem(USER_LOCAL_STORAGE_KEY, JSON.stringify(user));
 
     // tutaj of() nie jest wymagane, bo map automatycznie opakowuje wynik w Observable
-    return new AuthActions.AuthenticateSuccess({
+    return AuthActions.authenticateSuccess({
       userId: authResponseData.localId,
       email: authResponseData.email,
       token: authResponseData.idToken,
@@ -146,7 +141,7 @@ export class AuthEffects {
       }
     }
 
-    return of(new AuthActions.AuthenticateFail(errorMessage));
+    return of(AuthActions.authenticateFail({errorMessage}));
   };
 }
 
