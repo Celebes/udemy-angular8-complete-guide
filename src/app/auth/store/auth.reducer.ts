@@ -20,8 +20,7 @@ export function authReducer(state = initialState, action: AuthActions.AuthAction
       return {
         ...state,
         user,
-        authError: null,
-        loading: false
+        authError: null
       };
     case AuthActions.LOGOUT:
       return {
@@ -39,6 +38,11 @@ export function authReducer(state = initialState, action: AuthActions.AuthAction
       return {
         ...state,
         authError: action.payload,
+        loading: false
+      };
+    case AuthActions.AUTHENTICATE_STOP_LOADING:
+      return {
+        ...state,
         loading: false
       };
     default:

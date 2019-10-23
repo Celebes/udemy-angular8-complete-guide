@@ -6,6 +6,7 @@ export const SIGNUP_START = '[Auth] Signup Start';
 export const LOGIN_START = '[Auth] Login Start';
 export const LOGOUT = '[Auth] Logout';
 export const AUTO_LOGIN = '[Auth] Auto Login';
+export const AUTHENTICATE_STOP_LOADING = '[Auth] Authenticate Stop Loading';
 
 export class AuthenticateSuccess implements Action {
   readonly type = AUTHENTICATE_SUCCESS;
@@ -49,4 +50,8 @@ export class AutoLogin implements Action {
   readonly type = AUTO_LOGIN;
 }
 
-export type AuthActions = AuthenticateSuccess | Logout | LoginStart | AuthenticateFail | SignupStart | AutoLogin;
+export class AuthenticateStopLoading implements Action {
+  readonly type = AUTHENTICATE_STOP_LOADING;
+}
+
+export type AuthActions = AuthenticateSuccess | Logout | LoginStart | AuthenticateFail | SignupStart | AutoLogin | AuthenticateStopLoading;

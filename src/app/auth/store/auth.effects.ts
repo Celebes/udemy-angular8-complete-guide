@@ -9,6 +9,8 @@ import {tap} from 'rxjs/internal/operators/tap';
 import {Router} from '@angular/router';
 import {AuthService} from '../auth.service';
 import {User} from '../user.model';
+import {Store} from '@ngrx/store';
+import {AppState} from '../../store/app.reducer';
 
 const USER_LOCAL_STORAGE_KEY = 'userData';
 
@@ -18,6 +20,7 @@ export class AuthEffects {
   constructor(private actions$: Actions,
               private http: HttpClient,
               private authService: AuthService,
+              private store: Store<AppState>,
               private router: Router) {
   }
 
@@ -52,7 +55,7 @@ export class AuthEffects {
     ofType(AuthActions.AUTHENTICATE_SUCCESS),
     tap((action: AuthActions.AuthenticateSuccess) => {
       if (action.payload.redirect) {
-        this.router.navigate(['/']);
+        this.router.navigate(['/']).then(() => this.store.dispatch(new AuthActions.AuthenticateStopLoading()));
       }
     })
   );
